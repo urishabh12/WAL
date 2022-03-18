@@ -63,6 +63,11 @@ func (s *segment) get(total int, offset int) ([][]byte, error) {
 	return resp, nil
 }
 
+//TODO: To handle graceful close in future
+func (s *segment) close() error {
+	return nil
+}
+
 func max(a int, b int) int {
 	if a > b {
 		return a

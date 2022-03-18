@@ -37,7 +37,7 @@ func New(logName string, size int) error {
 		return err
 	}
 
-	err = createFile(dirPath + "/1")
+	err = createFile(fmt.Sprintf("%s/1", dirPath))
 
 	return err
 }
@@ -54,7 +54,7 @@ func Load(logName string) (*Log, error) {
 		return nil, err
 	}
 
-	seg, err := loadLastSegment(dirPath, meta)
+	seg, err := getSegment(dirPath, meta, meta.LastSegNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +109,9 @@ func loadMetadata(dirPath string) (*Metadata, error) {
 	return &meta, err
 }
 
-func loadLastSegment(dirPath string, meta *Metadata) (*segment, error) {
-	fileName := fmt.Sprintf("%d", meta.LastSegNumber)
-	filePath := dirPath + "/" + fileName
+func getSegment(path string, meta *Metadata, segNumber int) (*segment, error) {
+	fileName := fmt.Sprintf("%d", segNumber)
+	filePath := fmt.Sprintf("%s/%s", path, fileName)
 	data, err := file_reader.Read(filePath)
 	if err != nil {
 		return nil, err
@@ -124,9 +124,66 @@ func loadLastSegment(dirPath string, meta *Metadata) (*segment, error) {
 
 	return &segment{
 		maxNumberOfRecords: meta.MaxSegLength,
-		currentSeqNumber:   meta.LastSegNumber,
+		currentSeqNumber:   segNumber,
 		filePath:           filePath,
 		data:               segData,
 		size:               len(segData),
 	}, nil
+}
+
+//Log receiver functions
+
+func (l *Log) Add(data []byte) {
+	if l.lastSegment.size == l.meta.MaxSegLength {
+		l.createNextSegment()
+	}
+	l.lastSegment.append(data)
+}
+
+func (l *Log) GetLast(count int, offset int) ([][]byte, error) {
+	var resp [][]byte
+	totalSize := count
+	currSegment := l.lastSegment
+
+	for len(resp) < totalSize {
+		segOut, err := currSegment.get(count, offset)
+		if err != nil {
+			return resp, err
+		}
+
+		resp = append(resp, segOut...)
+		ln := len(resp)
+		if ln < totalSize {
+			count -= len(resp)
+			offset = 0
+		}
+
+		if currSegment.currentSeqNumber == 1 {
+			break
+		}
+		currSegment, err = getSegment(l.path, l.meta, currSegment.currentSeqNumber-1)
+		if err != nil {
+			return resp, err
+		}
+	}
+
+	return resp, nil
+}
+
+func (l *Log) createNextSegment() error {
+	nextSegNumber := l.meta.LastSegNumber + 1
+	err := createFile(fmt.Sprintf("%s/%d", l.path, nextSegNumber))
+	if err != nil {
+		return err
+	}
+
+	l.meta.LastSegNumber++
+	err = l.lastSegment.close()
+	if err != nil {
+		return err
+	}
+
+	l.lastSegment, err = getSegment(l.path, l.meta, nextSegNumber)
+
+	return err
 }
