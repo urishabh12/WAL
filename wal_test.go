@@ -25,6 +25,19 @@ func Test_CreateAndLoadMetadata(t *testing.T) {
 	handleErr(err, t)
 }
 
+func Test_AddAndGetLog(t *testing.T) {
+	log := "test"
+	err := New(log, 5)
+	handleErr(err, t)
+	l, err := Load(log)
+	handleErr(err, t)
+	data := "Hello"
+	for i := 0; i < 10; i++ {
+		err = l.Add([]byte(data))
+		handleErr(err, t)
+	}
+}
+
 func assertEqualInt(a int, b int, t *testing.T) {
 	if a != b {
 		t.Fatalf(fmt.Sprintf("%d is not equal to %d", a, b))

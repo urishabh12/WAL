@@ -133,11 +133,15 @@ func getSegment(path string, meta *Metadata, segNumber int) (*segment, error) {
 
 //Log receiver functions
 
-func (l *Log) Add(data []byte) {
+func (l *Log) Add(data []byte) error {
 	if l.lastSegment.size == l.meta.MaxSegLength {
-		l.createNextSegment()
+		err := l.createNextSegment()
+		if err != nil {
+			return err
+		}
 	}
-	l.lastSegment.append(data)
+	err := l.lastSegment.append(data)
+	return err
 }
 
 func (l *Log) GetLast(count int, offset int) ([][]byte, error) {
