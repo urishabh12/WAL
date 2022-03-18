@@ -53,16 +53,17 @@ func (s *segment) get(total int, offset int) ([][]byte, error) {
 	}
 
 	resp := [][]byte{}
-	end := min(offset+total, s.size-1)
-	for i := offset; i <= end; i++ {
+	start := s.size - 1 - offset
+	end := max(0, start-total)
+	for i := start; i >= end; i-- {
 		resp = append(resp, s.data[i])
 	}
 
 	return resp, nil
 }
 
-func min(a int, b int) int {
-	if a < b {
+func max(a int, b int) int {
+	if a > b {
 		return a
 	}
 

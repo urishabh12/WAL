@@ -30,8 +30,20 @@ func Test_Append(t *testing.T) {
 	assertTrueString(string(data), readTest, t)
 }
 
+func Test_ReadNonExistentFile(t *testing.T) {
+	path := "test.txt"
+	_, err := Read(path)
+	handleNotErr(err, t)
+}
+
 func handleErr(err error, t *testing.T) {
 	if err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
+func handleNotErr(err error, t *testing.T) {
+	if err == nil {
 		t.Fatalf(err.Error())
 	}
 }
