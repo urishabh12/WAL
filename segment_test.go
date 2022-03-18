@@ -7,11 +7,11 @@ import (
 
 func Test_SegmentAppend(t *testing.T) {
 	seg := segment{
-		maxNumberOfFiles: 10,
-		size:             0,
-		data:             [][]byte{},
-		currentSeqNumber: 1,
-		filePath:         "1",
+		maxNumberOfRecords: 10,
+		size:               0,
+		data:               [][]byte{},
+		currentSeqNumber:   1,
+		filePath:           "1",
 	}
 
 	data := "Hello"
@@ -23,17 +23,17 @@ func Test_SegmentAppend(t *testing.T) {
 	handleErr(err, t)
 	for i := 0; i < len(resp); i++ {
 		output := string(resp[i])
-		assertTrueString(data, output, t)
+		assertEqualString(data, output, t)
 	}
 }
 
 func Test_SegmentGet(t *testing.T) {
 	seg := segment{
-		maxNumberOfFiles: 10,
-		size:             0,
-		data:             [][]byte{},
-		currentSeqNumber: 2,
-		filePath:         "2",
+		maxNumberOfRecords: 10,
+		size:               0,
+		data:               [][]byte{},
+		currentSeqNumber:   2,
+		filePath:           "2",
 	}
 
 	data := "Hello"
@@ -57,7 +57,7 @@ func handleNotErr(err error, t *testing.T) {
 	}
 }
 
-func assertTrueString(a string, b string, t *testing.T) {
+func assertEqualString(a string, b string, t *testing.T) {
 	if a != b {
 		t.Fatalf(fmt.Sprintf("%s is not equal to %s", a, b))
 	}

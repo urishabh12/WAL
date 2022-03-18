@@ -9,11 +9,11 @@ const (
 )
 
 type segment struct {
-	maxNumberOfFiles int
-	currentSeqNumber int
-	filePath         string
-	data             [][]byte
-	size             int
+	maxNumberOfRecords int
+	currentSeqNumber   int
+	filePath           string
+	data               [][]byte
+	size               int
 }
 
 type OutOfBoundError struct{}
@@ -31,7 +31,7 @@ func (s SegmentFullError) Error() string {
 //Append will first add to log segment file than to it's own in memory copy.
 //This is done for fast lookup when trying to access immediate logs
 func (s *segment) append(data []byte) error {
-	if s.size == s.maxNumberOfFiles {
+	if s.size == s.maxNumberOfRecords {
 		return SegmentFullError{}
 	}
 
@@ -47,6 +47,7 @@ func (s *segment) append(data []byte) error {
 	return nil
 }
 
+//returns values in reverse of the order they were added
 func (s *segment) get(total int, offset int) ([][]byte, error) {
 	if offset >= s.size || offset < 0 || total < 1 {
 		return nil, OutOfBoundError{}
