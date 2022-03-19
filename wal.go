@@ -43,12 +43,6 @@ func New(logName string, opt Options) error {
 		return err
 	}
 
-	//populate options
-	maxSize := opt.SegmentSize
-	if maxSize == 0 {
-		maxSize = defaultOptions.SegmentSize
-	}
-
 	err = createMetadata(dirPath, opt)
 	if err != nil {
 		return err
