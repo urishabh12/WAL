@@ -6,8 +6,11 @@ import (
 )
 
 func Test_NewAndLoad(t *testing.T) {
-	log := "test"
-	err := New(log, 1000)
+	log := "testNAL"
+	opt := Options{
+		SegmentSize: 1000,
+	}
+	err := New(log, opt)
 	handleErr(err, t)
 	l, err := Load(log)
 	handleErr(err, t)
@@ -16,18 +19,24 @@ func Test_NewAndLoad(t *testing.T) {
 }
 
 func Test_CreateAndLoadMetadata(t *testing.T) {
-	log := "./test"
+	log := "./testCALM"
 	err := createDirectory(log)
 	handleErr(err, t)
-	err = createMetadata(log, 10)
+	opt := Options{
+		SegmentSize: 1000,
+	}
+	err = createMetadata(log, opt)
 	handleErr(err, t)
 	_, err = loadMetadata(log)
 	handleErr(err, t)
 }
 
 func Test_AddAndGetLog(t *testing.T) {
-	log := "test"
-	err := New(log, 5)
+	log := "testAAGL"
+	opt := Options{
+		SegmentSize: 5,
+	}
+	err := New(log, opt)
 	handleErr(err, t)
 	l, err := Load(log)
 	handleErr(err, t)

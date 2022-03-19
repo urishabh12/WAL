@@ -53,6 +53,19 @@ func Append(path string, data []byte) error {
 	return f.Sync()
 }
 
+func OpenFile(path string) (*os.File, error) {
+	return os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+}
+
+func AppendToFile(f *os.File, data []byte) error {
+	_, err := f.Write(data)
+	return err
+}
+
+func SyncFile(f *os.File) error {
+	return f.Sync()
+}
+
 func Delete(path string) error {
 	err := os.Remove(path)
 	return err

@@ -23,16 +23,33 @@ type Log struct {
 type Metadata struct {
 	MaxSegLength  int
 	LastSegNumber int
+	SyncAfter     int
 }
 
-func New(logName string, size int) error {
+type Options struct {
+	SegmentSize int
+	SyncAfter   int
+}
+
+var defaultOptions Options = Options{
+	SegmentSize: 100000,
+	SyncAfter:   0,
+}
+
+func New(logName string, opt Options) error {
 	dirPath := fmt.Sprintf("./%s", logName)
 	err := createDirectory(dirPath)
 	if err != nil {
 		return err
 	}
 
-	err = createMetadata(dirPath, size)
+	//populate options
+	maxSize := opt.SegmentSize
+	if maxSize == 0 {
+		maxSize = defaultOptions.SegmentSize
+	}
+
+	err = createMetadata(dirPath, opt)
 	if err != nil {
 		return err
 	}
@@ -78,10 +95,11 @@ func createDirectory(dirPath string) error {
 	return err
 }
 
-func createMetadata(dirPath string, size int) error {
+func createMetadata(dirPath string, opt Options) error {
 	meta := Metadata{
-		MaxSegLength:  size,
+		MaxSegLength:  opt.SegmentSize,
 		LastSegNumber: 1,
+		SyncAfter:     opt.SyncAfter,
 	}
 	data, err := json.Marshal(meta)
 	if err != nil {
@@ -122,12 +140,20 @@ func getSegment(path string, meta *Metadata, segNumber int) (*segment, error) {
 		segData = segData[:len(segData)-1]
 	}
 
+	file, err := file_reader.OpenFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
 	return &segment{
 		maxNumberOfRecords: meta.MaxSegLength,
 		currentSeqNumber:   segNumber,
 		filePath:           filePath,
 		data:               segData,
 		size:               len(segData),
+		file:               file,
+		syncAfter:          meta.SyncAfter,
+		lastSync:           len(segData),
 	}, nil
 }
 
@@ -164,6 +190,10 @@ func (l *Log) GetLast(count int, offset int) ([][]byte, error) {
 
 		if currSegment.currentSeqNumber == 1 {
 			break
+		}
+		err = currSegment.close()
+		if err != nil {
+			return resp, err
 		}
 		currSegment, err = getSegment(l.path, l.meta, currSegment.currentSeqNumber-1)
 		if err != nil {

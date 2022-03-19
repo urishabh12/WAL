@@ -3,15 +3,22 @@ package wal
 import (
 	"fmt"
 	"testing"
+
+	"github.com/urishabh12/WAL/file_reader"
 )
 
 func Test_SegmentAppend(t *testing.T) {
+	file, err := file_reader.OpenFile("testSA")
+	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
 		size:               0,
 		data:               [][]byte{},
 		currentSeqNumber:   1,
 		filePath:           "1",
+		file:               file,
+		syncAfter:          0,
+		lastSync:           0,
 	}
 
 	data := "Hello"
@@ -28,12 +35,17 @@ func Test_SegmentAppend(t *testing.T) {
 }
 
 func Test_SegmentGet(t *testing.T) {
+	file, err := file_reader.OpenFile("testSA")
+	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
 		size:               0,
 		data:               [][]byte{},
 		currentSeqNumber:   2,
 		filePath:           "2",
+		file:               file,
+		syncAfter:          0,
+		lastSync:           0,
 	}
 
 	data := "Hello"
@@ -41,7 +53,7 @@ func Test_SegmentGet(t *testing.T) {
 		err := seg.append([]byte(data))
 		handleErr(err, t)
 	}
-	_, err := seg.get(2, 9)
+	_, err = seg.get(2, 9)
 	handleNotErr(err, t)
 }
 

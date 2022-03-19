@@ -1,6 +1,8 @@
 package wal
 
 import (
+	"os"
+
 	"github.com/urishabh12/WAL/file_reader"
 )
 
@@ -14,6 +16,9 @@ type segment struct {
 	filePath           string
 	data               [][]byte
 	size               int
+	syncAfter          int
+	lastSync           int
+	file               *os.File
 }
 
 type OutOfBoundError struct{}
@@ -37,12 +42,16 @@ func (s *segment) append(data []byte) error {
 
 	fileData := append(data, []byte(delim)...)
 
-	err := file_reader.Append(s.filePath, fileData)
+	err := file_reader.AppendToFile(s.file, fileData)
 	if err != nil {
 		return err
 	}
 	s.data = append(s.data, data)
 	s.size++
+
+	if s.size-s.lastSync >= s.syncAfter {
+		file_reader.SyncFile(s.file)
+	}
 
 	return nil
 }
@@ -65,7 +74,7 @@ func (s *segment) get(total int, offset int) ([][]byte, error) {
 
 //TODO: To handle graceful close in future
 func (s *segment) close() error {
-	return nil
+	return s.file.Close()
 }
 
 func max(a int, b int) int {
