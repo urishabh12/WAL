@@ -10,8 +10,8 @@ opt := Options{
 		SegmentSize: 1000000,
 		SyncAfter:   1000,
 	}
-err := New(name, opt)
-l, err := Load(name)
+err := wal.New(name, opt)
+l, err := wal.Load(name)
 //handle err
 
 l.Add([]byte("One"))
@@ -24,11 +24,11 @@ resp, err := l.GetLast(3, 0)
 
 ### Log Iterator
 ```
-iter, err := NewIterator(l)
+iter, err := wal.NewIterator(l)
 //handle err
-for i := 0; i < 10; i++ {
+for !wal.IsEndOfLogError(err) {
 	val := string(iter.Value)
 	fmt.Println(val)
-	iter.Next()
+	err = iter.Next()
 }
 ```

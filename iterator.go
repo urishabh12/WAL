@@ -23,6 +23,9 @@ func (e EndOfLog) Error() string {
 }
 
 func IsEndOfLogError(e error) bool {
+	if e == nil {
+		return false
+	}
 	return e.Error() == endOfLogErrorText
 }
 
