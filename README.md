@@ -1,4 +1,5 @@
 # WAL
+Fast and configurable write ahead log
 
 ## Example
 
@@ -24,10 +25,10 @@ resp, err := l.GetLast(3, 0)
 ### Log Iterator
 ```
 iter, err := NewIterator(l)
+//handle err
 for i := 0; i < 10; i++ {
 		val := string(iter.Value)
 		fmt.Println(val)
 		iter.Next()
 }
-//handle err
 ```
