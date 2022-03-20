@@ -67,6 +67,5 @@ func SyncFile(f *os.File) error {
 }
 
 func Delete(path string) error {
-	err := os.Remove(path)
-	return err
+	return os.Remove(path)
 }
