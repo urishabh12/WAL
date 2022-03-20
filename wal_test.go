@@ -45,6 +45,16 @@ func Test_AddAndGetLog(t *testing.T) {
 		err = l.Add([]byte(data))
 		handleErr(err, t)
 	}
+
+	resp, err := l.GetLast(3, 0)
+	handleErr(err, t)
+	if len(resp) != 3 {
+		t.Fatalf(fmt.Sprintf("resp length is %d not 3", len(resp)))
+	}
+
+	for i := 0; i < len(resp); i++ {
+		assertEqualString(string(resp[i]), data, t)
+	}
 }
 
 func assertEqualInt(a int, b int, t *testing.T) {

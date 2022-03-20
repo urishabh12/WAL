@@ -64,7 +64,7 @@ func (s *segment) get(total int, offset int) ([][]byte, error) {
 
 	resp := [][]byte{}
 	start := s.size - 1 - offset
-	end := max(0, start-total)
+	end := max(0, start-total+1)
 	for i := start; i >= end; i-- {
 		resp = append(resp, s.data[i])
 	}

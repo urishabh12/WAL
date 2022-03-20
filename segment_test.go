@@ -8,7 +8,9 @@ import (
 )
 
 func Test_SegmentAppend(t *testing.T) {
-	file, err := file_reader.OpenFile("testSA")
+	path := "testSA"
+	file, err := file_reader.OpenFile(path)
+	defer file_reader.Delete(path)
 	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
@@ -34,8 +36,10 @@ func Test_SegmentAppend(t *testing.T) {
 	}
 }
 
-func Test_SegmentGet(t *testing.T) {
-	file, err := file_reader.OpenFile("testSA")
+func Test_SegmentGetOutOfBound(t *testing.T) {
+	path := "testSGOB"
+	file, err := file_reader.OpenFile(path)
+	defer file_reader.Delete(path)
 	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
@@ -55,6 +59,35 @@ func Test_SegmentGet(t *testing.T) {
 	}
 	_, err = seg.get(2, 9)
 	handleNotErr(err, t)
+}
+
+func Test_SegmentGet(t *testing.T) {
+	path := "testSG"
+	file, err := file_reader.OpenFile(path)
+	defer file_reader.Delete(path)
+	handleErr(err, t)
+	seg := segment{
+		maxNumberOfRecords: 10,
+		size:               0,
+		data:               [][]byte{},
+		currentSeqNumber:   2,
+		filePath:           "2",
+		file:               file,
+		syncAfter:          0,
+		lastSync:           0,
+	}
+
+	data := "Hello"
+	for i := 0; i < 5; i++ {
+		err := seg.append([]byte(data))
+		handleErr(err, t)
+	}
+	resp, err := seg.get(4, 0)
+	handleErr(err, t)
+
+	if len(resp) != 4 {
+		t.Fatalf(fmt.Sprintf("length of segment get response is not 4 but %d", len(resp)))
+	}
 }
 
 func handleErr(err error, t *testing.T) {
