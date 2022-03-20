@@ -27,8 +27,8 @@ resp, err := l.GetLast(3, 0)
 iter, err := NewIterator(l)
 //handle err
 for i := 0; i < 10; i++ {
-		val := string(iter.Value)
-		fmt.Println(val)
-		iter.Next()
+	val := string(iter.Value)
+	fmt.Println(val)
+	iter.Next()
 }
 ```
