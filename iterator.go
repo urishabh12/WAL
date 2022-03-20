@@ -14,6 +14,18 @@ type LogIterator struct {
 	seg       *segment
 }
 
+var endOfLogErrorText string = "Log file has ended"
+
+type EndOfLog struct{}
+
+func (e EndOfLog) Error() string {
+	return endOfLogErrorText
+}
+
+func IsEndOfLogError(e error) bool {
+	return e.Error() == endOfLogErrorText
+}
+
 //Iterator points to the latest log at the time of iterator creation and goes back to the oldest log.
 func NewIterator(l *Log) (*LogIterator, error) {
 	var iter LogIterator
@@ -26,22 +38,24 @@ func NewIterator(l *Log) (*LogIterator, error) {
 }
 
 //Decrements index by one and sets value to current
-func (i *LogIterator) Next() {
+func (i *LogIterator) Next() error {
 	i.currIndex--
 	if i.currIndex < 0 {
-		i.prevSegment()
+		err := i.prevSegment()
+		if err != nil {
+			return err
+		}
 	}
+
 	i.Value = i.seg.data[i.currIndex]
+	return nil
 }
 
 //Sets to previous segment
-//Stays same if last segment
-func (i *LogIterator) prevSegment() {
-	//if any error stay at the index
-	i.currIndex = 0
+func (i *LogIterator) prevSegment() error {
 	//if last segment return
 	if i.seg.currentSeqNumber == 1 {
-		return
+		return EndOfLog{}
 	}
 
 	//load segment without file
@@ -50,7 +64,7 @@ func (i *LogIterator) prevSegment() {
 	filePath := fmt.Sprintf("%s/%s", i.path, fileName)
 	data, err := file_reader.Read(filePath)
 	if err != nil {
-		return
+		return err
 	}
 
 	segData := bytes.Split(data, []byte(delim))
@@ -67,6 +81,8 @@ func (i *LogIterator) prevSegment() {
 		syncAfter:          i.seg.syncAfter,
 		lastSync:           len(segData),
 	}
+
+	return nil
 }
 
 //Creates a copy of segment

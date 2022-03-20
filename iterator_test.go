@@ -50,10 +50,14 @@ func Test_IteratorNextOverflow(t *testing.T) {
 
 	iter, err := NewIterator(l)
 	handleErr(err, t)
-	for i := 0; i < 10; i++ {
-		val := string(iter.Value)
-		assertEqualString(data, val, t)
-		iter.Next()
+	for i := 0; i < 4; i++ {
+		err := iter.Next()
+		handleErr(err, t)
+	}
+
+	err = iter.Next()
+	if !IsEndOfLogError(err) {
+		t.Fatalf("did not return end of log error")
 	}
 }
 
