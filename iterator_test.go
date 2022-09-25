@@ -3,12 +3,12 @@ package wal
 import (
 	"testing"
 
-	"github.com/urishabh12/WAL/file_reader"
+	file "github.com/urishabh12/WAL/file_manager"
 )
 
 func Test_Iterator(t *testing.T) {
 	path := "testIter"
-	defer file_reader.Delete(path)
+	defer file.Delete(path)
 	createTestWAL(path, 10, 0, t)
 	l, err := Load(path)
 	handleErr(err, t)
@@ -26,19 +26,22 @@ func Test_Iterator(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		val := string(iter.Value)
 		assertEqualString(dataSecond, val, t)
-		iter.Next()
+		err = iter.Next()
+		handleErr(err, t)
 	}
-
-	for i := 0; i < 10; i++ {
+	val := string(iter.Value)
+	assertEqualString(dataFirst, val, t)
+	for i := 0; i < 9; i++ {
+		err = iter.Next()
+		handleErr(err, t)
 		val := string(iter.Value)
 		assertEqualString(dataFirst, val, t)
-		iter.Next()
 	}
 }
 
 func Test_IteratorNextOverflow(t *testing.T) {
 	path := "testINOF"
-	defer file_reader.Delete(path)
+	defer file.Delete(path)
 	createTestWAL(path, 10, 0, t)
 	l, err := Load(path)
 	handleErr(err, t)

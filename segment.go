@@ -3,7 +3,7 @@ package wal
 import (
 	"os"
 
-	"github.com/urishabh12/WAL/file_reader"
+	file "github.com/urishabh12/WAL/file_manager"
 )
 
 const (
@@ -42,7 +42,7 @@ func (s *segment) append(data []byte) error {
 
 	fileData := append(data, []byte(delim)...)
 
-	err := file_reader.AppendToFile(s.file, fileData)
+	err := file.AppendToFile(s.file, fileData)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (s *segment) append(data []byte) error {
 	s.size++
 
 	if s.size-s.lastSync >= s.syncAfter {
-		file_reader.SyncFile(s.file)
+		file.SyncFile(s.file)
 	}
 
 	return nil

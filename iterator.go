@@ -1,17 +1,11 @@
 package wal
 
-import (
-	"bytes"
-	"fmt"
-
-	"github.com/urishabh12/WAL/file_reader"
-)
-
 type LogIterator struct {
 	Value     []byte
 	currIndex int
 	path      string
 	seg       *segment
+	meta      *Metadata
 }
 
 var endOfLogErrorText string = "Log file has ended"
@@ -36,6 +30,7 @@ func NewIterator(l *Log) (*LogIterator, error) {
 	iter.currIndex = l.lastSegment.size - 1
 	iter.seg = copySegment(l.lastSegment)
 	iter.Value = iter.seg.data[iter.currIndex]
+	iter.meta = l.meta
 
 	return &iter, nil
 }
@@ -63,27 +58,14 @@ func (i *LogIterator) prevSegment() error {
 
 	//load segment without file
 	currSeqNum := i.seg.currentSeqNumber - 1
-	fileName := fmt.Sprintf("%d", currSeqNum)
-	filePath := fmt.Sprintf("%s/%s", i.path, fileName)
-	data, err := file_reader.Read(filePath)
+	prevSeg, err := getSegment(i.path, i.meta, currSeqNum)
 	if err != nil {
 		return err
 	}
 
-	segData := bytes.Split(data, []byte(delim))
-	if len(segData) > 0 {
-		segData = segData[:len(segData)-1]
-	}
-
-	i.seg = &segment{
-		maxNumberOfRecords: i.seg.maxNumberOfRecords,
-		currentSeqNumber:   currSeqNum,
-		filePath:           filePath,
-		data:               segData,
-		size:               len(segData),
-		syncAfter:          i.seg.syncAfter,
-		lastSync:           len(segData),
-	}
+	i.seg = prevSeg
+	i.path = prevSeg.filePath
+	i.currIndex = prevSeg.size - 1
 
 	return nil
 }

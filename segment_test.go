@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/urishabh12/WAL/file_reader"
+	file_m "github.com/urishabh12/WAL/file_manager"
 )
 
 func Test_SegmentAppend(t *testing.T) {
 	path := "testSA"
-	file, err := file_reader.OpenFile(path)
-	defer file_reader.Delete(path)
+	file, err := file_m.OpenFile(path)
+	defer file_m.Delete(path)
 	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
@@ -38,8 +38,8 @@ func Test_SegmentAppend(t *testing.T) {
 
 func Test_SegmentGetOutOfBound(t *testing.T) {
 	path := "testSGOB"
-	file, err := file_reader.OpenFile(path)
-	defer file_reader.Delete(path)
+	file, err := file_m.OpenFile(path)
+	defer file_m.Delete(path)
 	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
@@ -63,8 +63,8 @@ func Test_SegmentGetOutOfBound(t *testing.T) {
 
 func Test_SegmentGet(t *testing.T) {
 	path := "testSG"
-	file, err := file_reader.OpenFile(path)
-	defer file_reader.Delete(path)
+	file, err := file_m.OpenFile(path)
+	defer file_m.Delete(path)
 	handleErr(err, t)
 	seg := segment{
 		maxNumberOfRecords: 10,
@@ -92,13 +92,13 @@ func Test_SegmentGet(t *testing.T) {
 
 func handleErr(err error, t *testing.T) {
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Errorf(err.Error())
 	}
 }
 
 func handleNotErr(err error, t *testing.T) {
 	if err == nil {
-		t.Fatalf("did not return error")
+		t.Errorf("did not return error")
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urishabh12/WAL/file_reader"
+	file "github.com/urishabh12/WAL/file_manager"
 )
 
 const (
@@ -85,7 +85,6 @@ func checkIfDirectoryAccesible(path string) error {
 
 func createDirectory(dirPath string) error {
 	err := os.Mkdir(dirPath, 0766)
-
 	return err
 }
 
@@ -99,18 +98,18 @@ func createMetadata(dirPath string, opt Options) error {
 	if err != nil {
 		return err
 	}
-	file_reader.Write(dirPath+metadataPath, data)
+	file.Write(dirPath+metadataPath, data)
 
 	return nil
 }
 
 func createFile(filePath string) error {
-	err := file_reader.Write(filePath, []byte(""))
+	err := file.Write(filePath, []byte(""))
 	return err
 }
 
 func loadMetadata(dirPath string) (*Metadata, error) {
-	data, err := file_reader.Read(dirPath + metadataPath)
+	data, err := file.Read(dirPath + metadataPath)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +123,7 @@ func loadMetadata(dirPath string) (*Metadata, error) {
 func getSegment(path string, meta *Metadata, segNumber int) (*segment, error) {
 	fileName := fmt.Sprintf("%d", segNumber)
 	filePath := fmt.Sprintf("%s/%s", path, fileName)
-	data, err := file_reader.Read(filePath)
+	data, err := file.Read(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +133,7 @@ func getSegment(path string, meta *Metadata, segNumber int) (*segment, error) {
 		segData = segData[:len(segData)-1]
 	}
 
-	file, err := file_reader.OpenFile(filePath)
+	file, err := file.OpenFile(filePath)
 	if err != nil {
 		return nil, err
 	}

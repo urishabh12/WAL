@@ -1,4 +1,4 @@
-package file_reader
+package file_manager
 
 import "os"
 
@@ -67,5 +67,5 @@ func SyncFile(f *os.File) error {
 }
 
 func Delete(path string) error {
-	return os.Remove(path)
+	return os.RemoveAll(path)
 }
