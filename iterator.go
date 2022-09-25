@@ -2,6 +2,7 @@ package wal
 
 type LogIterator struct {
 	Value     []byte
+	logIndex  int
 	currIndex int
 	path      string
 	seg       *segment
@@ -31,6 +32,7 @@ func NewIterator(l *Log) (*LogIterator, error) {
 	iter.seg = copySegment(l.lastSegment)
 	iter.Value = iter.seg.data[iter.currIndex]
 	iter.meta = l.meta
+	iter.logIndex = (l.meta.MaxSegLength * (l.meta.LastSegNumber - 1)) + (l.lastSegment.size - 1)
 
 	return &iter, nil
 }
@@ -38,6 +40,7 @@ func NewIterator(l *Log) (*LogIterator, error) {
 //Decrements index by one and sets value to current
 func (i *LogIterator) Next() error {
 	i.currIndex--
+	i.logIndex--
 	if i.currIndex < 0 {
 		err := i.prevSegment()
 		if err != nil {
